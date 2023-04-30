@@ -1,29 +1,42 @@
 //load navbar
-document.addEventListener("DOMContentLoaded", function() {
-    function getNavBar(){
+document.addEventListener("DOMContentLoaded", function () {
+    function getNavBar() {
         var xhr = new XMLHttpRequest();
-        xhr.open('GET', '/public/menus/navbar.html', true);
-        xhr.onreadystatechange = function() {
-            if (this.readyState !== 4) return;
-            if (this.status !== 200) return; // or whatever error handling you want
-            const myNav = document.querySelector('.holdNavBar') as HTMLElement
-            myNav.innerHTML = this.responseText;
+        xhr.open('GET', '/menus/navbar.html', true);
+        xhr.onreadystatechange = function () {
+            if (this.readyState !== 4)
+                return;
+            if (this.status !== 200)
+                return; // or whatever error handling you want
+            const myNavHolder = document.querySelector('.holdNavBar') as HTMLElement;
+
+            const nav = document.createElement("nav") 
+            nav.innerHTML = this.responseText;
+
+            myNavHolder.parentNode?.replaceChild(nav, myNavHolder);
         };
         xhr.send();
     }
-
-    function getFooter(){
+    function getFooter() {
         var xhr = new XMLHttpRequest();
-        xhr.open('GET', '/public/menus/footer.html', true);
-        xhr.onreadystatechange = function() {
-            if (this.readyState !== 4) return;
-            if (this.status !== 200) return; // or whatever error handling you want
-            const myNav = document.querySelector('.holdFooter') as HTMLElement
-            myNav.innerHTML = this.responseText;
+        xhr.open('GET', '/menus/footer.html', true);
+        xhr.onreadystatechange = function () {
+            if (this.readyState !== 4){
+                return;
+            }
+            if (this.status !== 200){
+                return; 
+            }
+        
+            const myNavHolder = document.querySelector('.holdFooter') as HTMLElement;
+
+            const nav = document.createElement("footer") 
+            nav.innerHTML = this.responseText;
+
+            myNavHolder.parentNode?.replaceChild(nav, myNavHolder);
         };
         xhr.send();
     }
-
-    getNavBar()
-    getFooter()
+    getNavBar();
+    getFooter();
 });
