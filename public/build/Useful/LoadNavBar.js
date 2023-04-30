@@ -3,7 +3,7 @@
 document.addEventListener("DOMContentLoaded", function () {
     function getNavBar() {
         var xhr = new XMLHttpRequest();
-        xhr.open('GET', '/build/public/menus/navbar.html', true);
+        xhr.open('GET', '/public/menus/navbar.html', true);
         xhr.onreadystatechange = function () {
             if (this.readyState !== 4)
                 return;
@@ -16,7 +16,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
     function getFooter() {
         var xhr = new XMLHttpRequest();
-        xhr.open('GET', '/build/public/menus/footer.html', true);
+        xhr.open('GET', '/public/menus/footer.html', true);
         xhr.onreadystatechange = function () {
             if (this.readyState !== 4)
                 return;
