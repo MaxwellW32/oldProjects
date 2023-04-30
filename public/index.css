@@ -4,4 +4,12 @@
 
 .workingDiv{
     min-height: 450px;
+    overflow-x: hidden;
+}
+
+.mainH1{
+    cursor: pointer;
+}
+@keyframes shake {
+    to { transform: translateX(10%) }
 }
