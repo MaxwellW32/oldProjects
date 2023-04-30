@@ -2,7 +2,6 @@
 const mousePosition = { mouseX: 0, mouseY: 0 };
 const lastPosition = { ...mousePosition };
 let timesRun = 0;
-let timer = 1000;
 //detect mouseposition
 document.addEventListener("mousemove", handleMouse);
 function handleMouse(event) {
@@ -19,17 +18,12 @@ function startInterval() {
         }
         if (timesRun >= 10) {
             timesRun = 0;
-            if (timer > 100) {
-                timer -= 100;
-                clearInterval(interval);
-                startInterval();
-            }
             workDiv.innerHTML = "";
             return;
         }
         lastPosition.mouseX = mousePosition.mouseX;
         lastPosition.mouseY = mousePosition.mouseY;
-        workDiv.innerHTML += `<p>X: ${mousePosition.mouseX} Y: ${mousePosition.mouseX}</p>`;
+        workDiv.innerHTML += `<p>X: ${mousePosition.mouseX} Y: ${mousePosition.mouseY}</p>`;
         timesRun++;
-    }, timer);
+    }, 1000);
 }
