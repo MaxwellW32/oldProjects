@@ -16,6 +16,37 @@ body {
 .mainH1{
     cursor: pointer;
 }
+
 @keyframes shake {
     to { transform: translateX(10%) }
+}
+
+.scaleCircle{
+    border-radius: 50%;
+    width: 20px;
+    aspect-ratio: 1/1;
+    position: absolute;
+    top: 10%;
+    left: 90%;
+    background-color: red;
+    border: none !important;
+    z-index: 2;
+    transition: scale 400ms;
+}
+
+.scaleCircle:last-of-type{
+    /* in front */
+    background-color: green;
+    z-index: 1;
+}
+
+.circText{
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    white-space: nowrap;
+    translate: -50% -50%;
+    font-size: .15rem;
+    color: white;
+    border: none !important;
 }
