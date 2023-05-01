@@ -1,55 +1,133 @@
-const mousePosition = {mouseX: 0, mouseY: 0}
-const lastPosition = {...mousePosition}
-let timesRun = 0
 
-//detect mouseposition
-document.addEventListener("mousemove", handleMouse)
+function AllForTrackingMouse(){
+    const mySpan = document.querySelector(".mainH1Span") as HTMLSpanElement
 
-function handleMouse(event: MouseEvent){
-    const { clientX, clientY } = event;
+    function startKeydown(){
+        document.addEventListener("keydown", handleKeydown)
+    }
+    startKeydown()
 
-    mousePosition.mouseX = clientX
-    mousePosition.mouseY = clientY
-}
+    function handleKeydown(event: KeyboardEvent){
+        const eventLetter = event.key.toLowerCase()
 
-let workDiv = document.querySelector(".workingDiv") as HTMLDivElement
-
-startInterval()
-function startInterval(){
-    const interval = setInterval(()=>{
-
-        if (lastPosition.mouseX === mousePosition.mouseX && lastPosition.mouseY === mousePosition.mouseY){
-            return
+        if (eventLetter === "k"){
+            console.log(`started`)
+            startTrackingMouse()
+            console.clear()
         }
+    }
 
-        if (timesRun >= 10){
-            timesRun = 0
+    function startTrackingMouse(){
+            
+        let timesRan = 0
+        let deviation = 0
+        let maxDeviation = 0
+        let steps = 0
+
+        function startTrack(){
+            document.addEventListener("mousemove", isMouseSteady)
+        }
+        startTrack()
+
+        const mousePosition = {mouseY: 0}
+        const lastMousePosition = {...mousePosition}
+        let alreadyRun = false
+
+        function isMouseSteady(event: MouseEvent){
+            const { clientY } = event;
+
+            if (!alreadyRun){
+                mousePosition.mouseY = clientY 
+                lastMousePosition.mouseY = clientY 
+                console.log(mousePosition)
+                console.log(lastMousePosition)
+                alreadyRun = true
+            }
+
+            steps++
+
+            if (steps >= 15){
+                mousePosition.mouseY = clientY
+                steps = 0
+            }
+
+            timesRan++
+
+            if (timesRan > 5){
+                //check if they are still good
+                if (maxDeviation <= 5){
+                    // console.log(`good so far`)
+                    changeElementColor(mySpan, "green")
+                } else {
+                    console.log(`ooh not good`)
+                    console.log(`maxDev ${maxDeviation}`)
+                    changeElementColor(mySpan, "red")
+                }
+
+                timesRan = 0
+            }
+
+            //check
+            deviation = lastMousePosition.mouseY - mousePosition.mouseY
+
+            if (deviation < 0){
+                deviation *= -1
+            }
+
+
+            if (deviation > maxDeviation){
+                console.log(`dev seen ${maxDeviation} dev ${deviation}`)
+                maxDeviation = deviation
+            }
+
+            // console.log(`deviation ${deviation} maxD: ${maxDeviation}`)
+            lastMousePosition.mouseY = mousePosition.mouseY
+        }   
+    }
+}
+AllForTrackingMouse()
+
+function AllForWorkingDiv(){
+    //outer function - closure
+    let workDiv = document.querySelector(".workingDiv") as HTMLDivElement
+    let currentlyRunning = false
+    
+    function displayMousePosition(){
+        document.addEventListener("mousemove", updateWorkDiv)
+        currentlyRunning = true
+    }
+
+    displayMousePosition()
+
+    let workDivAmount = 0
+    
+    function updateWorkDiv(event: MouseEvent){
+        
+        const { clientX, clientY } = event;
+        
+        workDiv.innerHTML = `X: ${clientX} Y: ${clientY}</p> ${workDiv.innerHTML}`
+        
+        if (workDivAmount >= 100){
             workDiv.innerHTML = ""
-            return 
+            workDivAmount = -1
         }
-
-        lastPosition.mouseX = mousePosition.mouseX
-        lastPosition.mouseY = mousePosition.mouseY
-
-
-        workDiv.innerHTML += `<p>X: ${mousePosition.mouseX} Y: ${mousePosition.mouseY}</p>`
-        timesRun++
-
-    }, 100)
-
+        
+        workDivAmount++
+    }   
 }
+AllForWorkingDiv()
 
-handleLongMouseClick(".mainH1", "mouseenter")
-function handleLongMouseClick(element:string, eventType:string = "mousedown", time:number=100){
+function handleLongMouseClick(element:string, eventType:string = "mousedown", time: number = 100){
     let mainEls = document.querySelectorAll(`${element}`) as NodeListOf<HTMLElement>
     let timeOut : number | undefined;
 
     mainEls.forEach((eachEl)=>{
         if (eventType === "mousedown"){
-            eachEl.addEventListener(`mousedown`, ()=>{handleClick("start")})
+            eachEl.addEventListener(element, ()=>{handleClick("start")})
             eachEl.addEventListener(`mouseup`, ()=>{handleClick("stop")})
+
         }else if (eventType === "mouseenter"){
-            eachEl.addEventListener(`mouseenter`, ()=>{handleClick("start")})
+            eachEl.addEventListener(element, ()=>{handleClick("start")})
             eachEl.addEventListener(`mouseleave`, ()=>{handleClick("stop")})
         }
 
@@ -59,7 +137,7 @@ function handleLongMouseClick(element:string, eventType:string = "mousedown", ti
                     console.log(`hello there ${time} ms`)
                     changeElementColor(eachEl, "blue")
                     runVibration(eachEl, "add")
-                },time)
+                }, time)
                 
             }else if (option === "stop"){
                 if (timeOut){
@@ -71,6 +149,7 @@ function handleLongMouseClick(element:string, eventType:string = "mousedown", ti
         }
     })
 }
+handleLongMouseClick(".mainH1", "mouseenter")
 
 function changeElementColor(element:HTMLElement, color:string){
     element.style.color = `${color}`

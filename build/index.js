@@ -1,43 +1,104 @@
 "use strict";
-const mousePosition = { mouseX: 0, mouseY: 0 };
-const lastPosition = { ...mousePosition };
-let timesRun = 0;
-//detect mouseposition
-document.addEventListener("mousemove", handleMouse);
-function handleMouse(event) {
-    const { clientX, clientY } = event;
-    mousePosition.mouseX = clientX;
-    mousePosition.mouseY = clientY;
-}
-let workDiv = document.querySelector(".workingDiv");
-startInterval();
-function startInterval() {
-    const interval = setInterval(() => {
-        if (lastPosition.mouseX === mousePosition.mouseX && lastPosition.mouseY === mousePosition.mouseY) {
-            return;
+function AllForTrackingMouse() {
+    const mySpan = document.querySelector(".mainH1Span");
+    function startKeydown() {
+        document.addEventListener("keydown", handleKeydown);
+    }
+    startKeydown();
+    function handleKeydown(event) {
+        const eventLetter = event.key.toLowerCase();
+        if (eventLetter === "k") {
+            console.log(`started`);
+            startTrackingMouse();
+            console.clear();
         }
-        if (timesRun >= 10) {
-            timesRun = 0;
+    }
+    function startTrackingMouse() {
+        let timesRan = 0;
+        let deviation = 0;
+        let maxDeviation = 0;
+        let steps = 0;
+        function startTrack() {
+            document.addEventListener("mousemove", isMouseSteady);
+        }
+        startTrack();
+        const mousePosition = { mouseY: 0 };
+        const lastMousePosition = { ...mousePosition };
+        let alreadyRun = false;
+        function isMouseSteady(event) {
+            const { clientY } = event;
+            if (!alreadyRun) {
+                mousePosition.mouseY = clientY;
+                lastMousePosition.mouseY = clientY;
+                console.log(mousePosition);
+                console.log(lastMousePosition);
+                alreadyRun = true;
+            }
+            steps++;
+            if (steps >= 15) {
+                mousePosition.mouseY = clientY;
+                steps = 0;
+            }
+            timesRan++;
+            if (timesRan > 5) {
+                //check if they are still good
+                if (maxDeviation <= 5) {
+                    // console.log(`good so far`)
+                    changeElementColor(mySpan, "green");
+                }
+                else {
+                    console.log(`ooh not good`);
+                    console.log(`maxDev ${maxDeviation}`);
+                    changeElementColor(mySpan, "red");
+                }
+                timesRan = 0;
+            }
+            //check
+            deviation = lastMousePosition.mouseY - mousePosition.mouseY;
+            if (deviation < 0) {
+                deviation *= -1;
+            }
+            if (deviation > maxDeviation) {
+                console.log(`dev seen ${maxDeviation} dev ${deviation}`);
+                maxDeviation = deviation;
+            }
+            // console.log(`deviation ${deviation} maxD: ${maxDeviation}`)
+            lastMousePosition.mouseY = mousePosition.mouseY;
+        }
+    }
+}
+AllForTrackingMouse();
+function AllForWorkingDiv() {
+    //outer function - closure
+    let workDiv = document.querySelector(".workingDiv");
+    let currentlyRunning = false;
+    function displayMousePosition() {
+        document.addEventListener("mousemove", updateWorkDiv);
+        currentlyRunning = true;
+    }
+    displayMousePosition();
+    let workDivAmount = 0;
+    function updateWorkDiv(event) {
+        const { clientX, clientY } = event;
+        workDiv.innerHTML = `X: ${clientX} Y: ${clientY}</p> ${workDiv.innerHTML}`;
+        if (workDivAmount >= 100) {
             workDiv.innerHTML = "";
-            return;
+            workDivAmount = -1;
         }
-        lastPosition.mouseX = mousePosition.mouseX;
-        lastPosition.mouseY = mousePosition.mouseY;
-        workDiv.innerHTML += `<p>X: ${mousePosition.mouseX} Y: ${mousePosition.mouseY}</p>`;
-        timesRun++;
-    }, 100);
+        workDivAmount++;
+    }
 }
-handleLongMouseClick(".mainH1", "mouseenter");
+AllForWorkingDiv();
 function handleLongMouseClick(element, eventType = "mousedown", time = 100) {
     let mainEls = document.querySelectorAll(`${element}`);
     let timeOut;
     mainEls.forEach((eachEl) => {
         if (eventType === "mousedown") {
-            eachEl.addEventListener(`mousedown`, () => { handleClick("start"); });
+            eachEl.addEventListener(element, () => { handleClick("start"); });
             eachEl.addEventListener(`mouseup`, () => { handleClick("stop"); });
         }
         else if (eventType === "mouseenter") {
-            eachEl.addEventListener(`mouseenter`, () => { handleClick("start"); });
+            eachEl.addEventListener(element, () => { handleClick("start"); });
             eachEl.addEventListener(`mouseleave`, () => { handleClick("stop"); });
         }
         function handleClick(option) {
@@ -58,6 +119,7 @@ function handleLongMouseClick(element, eventType = "mousedown", time = 100) {
         }
     });
 }
+handleLongMouseClick(".mainH1", "mouseenter");
 function changeElementColor(element, color) {
     element.style.color = `${color}`;
 }
