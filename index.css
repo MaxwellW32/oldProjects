@@ -2,51 +2,69 @@
     box-sizing: border-box;
     margin: 0;
     padding: 0;
-    border: 1px solid red !important;
+    /* border: 1px solid red !important; */
 }
 
-body {
-    overflow-x: hidden;
-}
-.workingDiv{
-    height: 395px;
-    overflow: hidden;
-}
-
-.mainH1{
-    cursor: pointer;
+body{
+    text-align: center;
+    color: white;
+    background-color: brown;
+    font-size: calc(1px, 1vw, 3rem);
 }
 
-@keyframes shake {
-    to { transform: translateX(10%) }
+#rootDiv{
+    height: 100dvh;
+    background-color: rgb(190, 255, 190);
+    position: relative;
 }
 
-.scaleCircle{
+.smallRec{
+    position: absolute;
+    aspect-ratio: 2/1;
+    background-color: brown;
+    display: grid;
+    align-items: center;
+    justify-items: center;
+}
+
+#safeRect{
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 100%;
+    translate: -100%;
+    width: 5%;
+    background-color: blueviolet;
+}
+
+.bubble{
+    width: 1%;
+    position: absolute;
+    aspect-ratio: 1/1;
+    background-color: blue;
     border-radius: 50%;
-    width: 20px;
+    translate: -50% -50%;
+}
+
+.boxNumber{
+    /* height: 100%; */
+}
+
+@keyframes rumbleBubble {
+    0% {translate: 0% 0%;}
+    25% {translate: 10% 10%;}
+    50% {translate: -10% 10%;}
+    75% {translate: 10% -10%;}
+    85% {translate: -10% -10%;}
+    95% {translate: 20% 20%;}
+    100% {translate: -30% -30%;}
+    
+}
+#myTest{
+    background-color: brown;
     aspect-ratio: 1/1;
     position: absolute;
-    top: 10%;
-    left: 90%;
-    background-color: red;
-    border: none !important;
-    z-index: 2;
-    transition: scale 400ms;
-}
-
-.scaleCircle:last-of-type{
-    /* in front */
-    background-color: green;
-    z-index: 1;
-}
-
-.circText{
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    white-space: nowrap;
-    translate: -50% -50%;
-    font-size: .15rem;
-    color: white;
-    border: none !important;
+    width: 2rem;
+    top: 0;
+    left: 2rem;
 }

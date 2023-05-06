@@ -1,236 +1,265 @@
+function startAll(){
+    //declare dom elements here
 
-function AllForTrackingMouse(){
-    const mySpan = document.querySelector(".mainH1Span") as HTMLSpanElement
+    function makeElement(elType: string, id: string, className: string){
+        const element = document.createElement(`${elType}`)
 
-    function startKeydown(){
-        document.addEventListener("keydown", handleKeydown)
-    }
-    startKeydown()
-
-    function handleKeydown(event: KeyboardEvent){
-        const eventLetter = event.key.toLowerCase()
-
-        if (eventLetter === "k"){
-            console.log(`started`)
-            startTrackingMouse()
+        if (id !== ""){
+            element.setAttribute("id", `${id}`)
         }
+
+        if (className !== ""){
+            element.setAttribute("class", `${className}`)
+        }
+
+        return element
     }
 
-    function startTrackingMouse(){
+    function makeAll(){
+        //make all elements on the page
+
+        //add rootdiv
+        const rootDiv = makeElement("div","rootDiv","")
+
+        const body = document.querySelector('body') as HTMLElement;
+        const firstChild = body.firstElementChild;
+
+        if (firstChild === null) { 
+        body.appendChild(rootDiv);
+        } else if (firstChild.id !== "rootDiv") {
+        body.insertBefore(rootDiv, firstChild.nextSibling);
+        }
+
+    }
+    makeAll()
+
+    //useAll properties made - variable declarations
+    const rootDiv = document.querySelector("#rootDiv") as HTMLElement
+    
+    function myGame(amount: number){
+        rootDiv.innerHTML = ""
+
+        //brown squares
+        function makeSmallRecs(amount: number){
+            for (let i = 0; i <  amount; i++) {
+                const smallRec = makeElement("div", "", "smallRec")
+                rootDiv.appendChild(smallRec)
+            }
+        }
+        makeSmallRecs(amount)
+
+        const smallRectangles: NodeListOf<HTMLElement> = document.querySelectorAll(".smallRec")
+
+        //main code starts here
+        const allRecPositions:{
+            [key: string] : [number, number, boolean]
+        } = {
+        }
+
+        const alldistCompareAll:{
+            [key: string] : number
+        } = {
+        }
+
+        smallRectangles.forEach((eachRec, index) => {
+
+            const rndWidth = 5 - Math.floor((Math.random() * 1))
+            const maxWidth = 100 - rndWidth 
+            const maxHeight = 100 - rndWidth 
             
-        let timesRan = 0
-        let deviation = 0
-        let maxDeviation = 0
-        let steps = 0
-        let deviationLimit = 5
+            const rndX = Math.floor(Math.random() * maxWidth)
+            const rndY = Math.floor(Math.random() * maxHeight)
 
-        function addMouseMove(){
-            document.addEventListener("mousemove", mouseWatch)
-        }
-        addMouseMove()
+            eachRec.style.top = `${rndY}%`
+            eachRec.style.left = `${rndX}%`
+            eachRec.style.width = `${rndWidth}%`
 
-        let mousePosition = {mouseY: 0}
-        let lastMousePosition = {mouseY: 0}
-        let alreadyRun = false
+            allRecPositions[`box${index+1}`] = [rndX + rndWidth / 2, rndY + rndWidth / 2, false]
+            eachRec.setAttribute("id", `box${index+1}`)
+            
+        })
 
-        let lives = 3
 
-        function startOver(){
-            // alert(`reset`)
-            console.clear()
-            timesRan = 0
-            deviation = 0
-            maxDeviation = 0
-            steps = 0
-            mousePosition.mouseY = 0
-            lastMousePosition.mouseY = 0
-            alreadyRun = false
-            lives = 3
-        }
+        let currentBox = "box1"
+        let smallestDistArrObj : [string, number] = ["", Infinity]
+        
 
-        function createAllOnScreen(){
-            const lifeCount = document.createElement("p")
-            lifeCount.setAttribute("class","lifeCount")
-            lifeCount.innerHTML = "3 lives"
+        let runAmt = 0
 
-            const el = document.querySelector(".mainH1") as HTMLHeadingElement
+        function assignNextSmallest(){
+            allRecPositions[currentBox][2] = true 
+            smallestDistArrObj = ["", Infinity]
+            let comparedDistance
 
-            el.insertAdjacentElement('afterend', lifeCount);
+            for (const key in allRecPositions) {
 
-        }
-        createAllOnScreen()
+                if (allRecPositions[key][2] === false){
+                    comparedDistance = findDistance(allRecPositions[currentBox][0], allRecPositions[currentBox][1], allRecPositions[key][0], allRecPositions[key][1])
+                    
+                    alldistCompareAll[key] = comparedDistance
 
-        const lifePara = document.querySelector(".lifeCount") as HTMLParagraphElement
-        function subLivee(){
-            if (lives > 0){
-                lives--
+                    if (comparedDistance <= smallestDistArrObj[1]){
+                        smallestDistArrObj = [key, comparedDistance]
+                    }                
+                }
             }
 
-            if (lives = 0){
-                startOver()
-            }
+            allRecPositions[smallestDistArrObj[0]][2] = true 
 
-            lifePara.innerHTML = `${lives} lives`
-        }
 
-        function mouseWatch(event: MouseEvent){
-            const { clientX, clientY } = event;
+            const div1Rect = {
+                left: allRecPositions[currentBox][0],
+                right: 100 - allRecPositions[currentBox][0],
+                top: allRecPositions[currentBox][1],
+                bottom: 100 - allRecPositions[currentBox][1]
+            };
+            const div2Rect = {
+                left: allRecPositions[smallestDistArrObj[0]][0],
+                right: 100 - allRecPositions[smallestDistArrObj[0]][0],
+                top: allRecPositions[smallestDistArrObj[0]][1],
+                bottom: 100 - allRecPositions[smallestDistArrObj[0]][1]
+            };
 
-            if (!alreadyRun){
-                mousePosition.mouseY = clientY 
-                lastMousePosition.mouseY = clientY 
-                alreadyRun = true
-            }
+        
 
-            steps++
+            const midpoint = {
+            x: (div1Rect.left + div2Rect.left) / 2,
+            y: (div1Rect.top + div2Rect.top) / 2,
+            };
 
-            if (steps >= 15){
-                mousePosition.mouseY = clientY
-                steps = 0
-            }
+            const angle = Math.atan2(div2Rect.top - div1Rect.top, div2Rect.left - div1Rect.left);
 
-            timesRan++
+            const segmentCount = 10;
+            const segmentLength = comparedDistance as number / segmentCount;
 
-            if (timesRan > 5){
-                console.log(`maxDeviation ${maxDeviation}`)
-                //check if they are still good
-                if (maxDeviation <= deviationLimit){
-                    // console.log(`good so far`)
-                    changeElementColor(mySpan, "green")
-                } else {
-                    // console.log(`ooh not good`)
-                    changeElementColor(mySpan, "red")
-                    subLivee()
+            const segmentPoints: {
+                x: number,
+                y: number,
+            }[] = [];
+
+            for (let i = 0; i <= segmentCount; i++) {
+                const x = midpoint.x + Math.cos(angle) * (i * segmentLength);
+                const y = midpoint.y + Math.sin(angle) * (i * segmentLength);
+
+                // Check if the x coordinate lies outside the bounds of the parent divs
+                if (x < Math.min(div1Rect.left, div2Rect.left) || x > Math.max(div1Rect.right, div2Rect.right)) {
+                    continue;
                 }
 
-                timesRan = 0
+                // Check if the y coordinate lies outside the bounds of the parent divs
+                if (y < Math.min(div1Rect.top, div2Rect.top) || y > Math.max(div1Rect.bottom, div2Rect.bottom)) {
+                    continue;
+                }
+
+                segmentPoints.push({ x, y });
             }
+            
 
-            //check
-            deviation = lastMousePosition.mouseY - mousePosition.mouseY
+            let initial = 0
+            callABubble(10)
 
-            if (deviation < 0){
-                deviation *= -1
-            }
+            function callABubble(time: number){
+                setTimeout(()=>{
+                    if (initial < segmentPoints.length - 1){
 
+                        createBubble(segmentPoints[initial].x, segmentPoints[initial].y)
+                        initial++ 
 
-            if (deviation > maxDeviation){
-                maxDeviation = deviation
-            }
-
-            // console.log(`deviation ${deviation} maxD: ${maxDeviation}`)
-            lastMousePosition.mouseY = mousePosition.mouseY
-
-            setCircleScale(maxDeviation)
-            setCircleText(clientX, clientY)
-        }   
-
-        function createCircles(amount: number = 2){
-            console.log(`hi`)
-            for (let i = 0; i < amount; i++) {
-                const circle = document.createElement("div")
-                circle.setAttribute("id",`circ${i+1}`)
-                circle.setAttribute("class","scaleCircle")
-                document.body.append(circle)
-            }
-
-
-
-        }
-        createCircles() 
-        //circle 1 is dynamic red
-        const circle1 = document.querySelector(`#circ1`) as HTMLDivElement
-        const circle2 = document.querySelector(`#circ2`) as HTMLDivElement
-        circle2.style.scale = `${deviationLimit}`
-
-        function setCircleScale(scale: number = 1){
-
-            if (scale >= deviationLimit){
-                scale = deviationLimit
-            }
-
-            circle1.style.scale = `${scale}`
-        }
-
-        function setCircleText(x: number, y:number){
-            circle1.innerHTML = `<p class="circText">X: ${x} Y: ${y}</p>`
-        }
-    }
-}
-AllForTrackingMouse()
-
-// function AllForWorkingDiv(){
-//     //outer function - closure
-//     let workDiv = document.querySelector(".workingDiv") as HTMLDivElement
-//     let currentlyRunning = false
-    
-//     function displayMousePosition(){
-//         document.addEventListener("mousemove", updateWorkDiv)
-//         currentlyRunning = true
-//     }
-
-//     displayMousePosition()
-
-//     let workDivAmount = 0
-    
-//     function updateWorkDiv(event: MouseEvent){
-        
-//         const { clientX, clientY } = event;
-        
-//         workDiv.innerHTML = `X: ${clientX} Y: ${clientY}</p> ${workDiv.innerHTML}`
-        
-//         if (workDivAmount >= 100){
-//             workDiv.innerHTML = ""
-//             workDivAmount = -1
-//         }
-        
-//         workDivAmount++
-//     }   
-// }
-// AllForWorkingDiv()
-
-function handleLongMouseClick(element:string, eventType:string = "mousedown", time: number = 100){
-    let mainEls = document.querySelectorAll(`${element}`) as NodeListOf<HTMLElement>
-    let timeOut : number | undefined;
-
-    mainEls.forEach((eachEl)=>{
-        if (eventType === "mousedown"){
-            eachEl.addEventListener(element, ()=>{handleClick("start")})
-            eachEl.addEventListener(`mouseup`, ()=>{handleClick("stop")})
-
-        }else if (eventType === "mouseenter"){
-            eachEl.addEventListener(element, ()=>{handleClick("start")})
-            eachEl.addEventListener(`mouseleave`, ()=>{handleClick("stop")})
-        }
-
-        function handleClick(option:string){
-                if (option === "start"){
-                    timeOut = setTimeout(()=>{
-                    console.log(`hello there ${time} ms`)
-                    changeElementColor(eachEl, "blue")
-                    runVibration(eachEl, "add")
+                        callABubble(time)
+                    }else{
+                        
+                        wdAnything(`#${currentBox}`, `<p>${currentBox}<p>`, "backgroundColor", "green")
+                        currentBox = smallestDistArrObj[0]
+                        wdAnything(`#${smallestDistArrObj[0]}`, "$$nochange$$", "backgroundColor", "red")
+          
+                        if (runAmt < smallRectangles.length - 2){
+                            assignNextSmallest()
+                        }else{
+                            myGame(smallRectangles.length+1)
+                        }
+                        runAmt++
+                    }
                 }, time)
-                
-            }else if (option === "stop"){
-                if (timeOut){
-                    clearTimeout(timeOut)
-                    changeElementColor(eachEl, "black")
-                    runVibration(eachEl, "rem")
-                }
+            }
+
+        }
+         assignNextSmallest()
+
+        // let runAmt = 0
+
+        // const myInterval = setInterval(()=>{
+        //     if (runAmt < smallRectangles.length - 1){
+        //         assignNextSmallest()
+        //     }else{
+        //         clearInterval(myInterval)
+        //         myGame(smallRectangles.length+1)
+        //     }
+        //     runAmt++
+        // }, 1000)
+
+    }
+    myGame(5)
+
+
+    function findDistance(x1:number, y1:number, x2:number, y2:number) {
+        const xDiff = x2 - x1;
+        const yDiff = y2 - y1;
+        const distance = Math.sqrt(xDiff ** 2 + yDiff ** 2);
+
+        return distance;
+    }
+      
+
+    function createBubble(coordX: number, coordY: number){
+        const bubble = document.createElement("div")
+        bubble.setAttribute("class", "bubble")
+
+        bubble.style.top = `${coordY}%`
+        bubble.style.left = `${coordX}%`
+        // bubble.style.backgroundColor = `rgb(${255 - activeId * 20},${activeId*10},${activeId*30})`
+
+        rootDiv.appendChild(bubble)
+
+        setTimeout(()=>{
+            bubble.style.animation = `rumbleBubble 2500ms`
+            setTimeout(()=>{
+                bubble.remove()
+            },2500)
+        },4000)
+    }
+
+    function wdAnything(elements: NodeListOf<HTMLElement> | HTMLElement | string, textValue: string, styleProp?: string, stylePropValue?:string){
+        //write any change to the DOM
+
+        if (typeof elements === "string"){
+            const getAllEl = document.querySelectorAll(`${elements}`)
+
+            if (!getAllEl){
+                console.log(`couldn't find element`)
+                return
+            }else{
+                elements = getAllEl as NodeListOf<HTMLElement>
             }
         }
-    })
-}
-handleLongMouseClick(".mainH1", "mouseenter")
 
-function changeElementColor(element:HTMLElement, color:string){
-    element.style.color = `${color}`
-}
+        if (elements instanceof NodeList){
+            elements.forEach(addChange)
 
-function runVibration(element:HTMLElement, option:string){
-    if (option === "add"){
-        element.style.animation = `shake 400ms infinite alternate`
-    }else if (option === "rem"){
-        element.style.removeProperty("animation")
+        } else if (elements instanceof HTMLElement){
+            addChange(elements)
+        }
+
+        function addChange(element: HTMLElement){
+
+            if (styleProp && stylePropValue){
+                (element.style as any)[styleProp] = stylePropValue!;
+            }
+            
+            if (textValue !== "$$nochange$$"){
+                element.innerHTML = textValue
+            }
+        }
     }
+
 }
+startAll()

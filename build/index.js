@@ -1,187 +1,191 @@
 "use strict";
-function AllForTrackingMouse() {
-    const mySpan = document.querySelector(".mainH1Span");
-    function startKeydown() {
-        document.addEventListener("keydown", handleKeydown);
+function startAll() {
+    //declare dom elements here
+    function makeElement(elType, id, className) {
+        const element = document.createElement(`${elType}`);
+        if (id !== "") {
+            element.setAttribute("id", `${id}`);
+        }
+        if (className !== "") {
+            element.setAttribute("class", `${className}`);
+        }
+        return element;
     }
-    startKeydown();
-    function handleKeydown(event) {
-        const eventLetter = event.key.toLowerCase();
-        if (eventLetter === "k") {
-            console.log(`started`);
-            startTrackingMouse();
+    function makeAll() {
+        //make all elements on the page
+        //add rootdiv
+        const rootDiv = makeElement("div", "rootDiv", "");
+        const body = document.querySelector('body');
+        const firstChild = body.firstElementChild;
+        if (firstChild === null) {
+            body.appendChild(rootDiv);
+        }
+        else if (firstChild.id !== "rootDiv") {
+            body.insertBefore(rootDiv, firstChild.nextSibling);
         }
     }
-    function startTrackingMouse() {
-        let timesRan = 0;
-        let deviation = 0;
-        let maxDeviation = 0;
-        let steps = 0;
-        let deviationLimit = 5;
-        function addMouseMove() {
-            document.addEventListener("mousemove", mouseWatch);
-        }
-        addMouseMove();
-        let mousePosition = { mouseY: 0 };
-        let lastMousePosition = { mouseY: 0 };
-        let alreadyRun = false;
-        let lives = 3;
-        function startOver() {
-            // alert(`reset`)
-            console.clear();
-            timesRan = 0;
-            deviation = 0;
-            maxDeviation = 0;
-            steps = 0;
-            mousePosition.mouseY = 0;
-            lastMousePosition.mouseY = 0;
-            alreadyRun = false;
-            lives = 3;
-        }
-        function createAllOnScreen() {
-            const lifeCount = document.createElement("p");
-            lifeCount.setAttribute("class", "lifeCount");
-            lifeCount.innerHTML = "3 lives";
-            const el = document.querySelector(".mainH1");
-            el.insertAdjacentElement('afterend', lifeCount);
-        }
-        createAllOnScreen();
-        const lifePara = document.querySelector(".lifeCount");
-        function subLivee() {
-            if (lives > 0) {
-                lives--;
-            }
-            if (lives = 0) {
-                startOver();
-            }
-            lifePara.innerHTML = `${lives} lives`;
-        }
-        function mouseWatch(event) {
-            const { clientX, clientY } = event;
-            if (!alreadyRun) {
-                mousePosition.mouseY = clientY;
-                lastMousePosition.mouseY = clientY;
-                alreadyRun = true;
-            }
-            steps++;
-            if (steps >= 15) {
-                mousePosition.mouseY = clientY;
-                steps = 0;
-            }
-            timesRan++;
-            if (timesRan > 5) {
-                console.log(`maxDeviation ${maxDeviation}`);
-                //check if they are still good
-                if (maxDeviation <= deviationLimit) {
-                    // console.log(`good so far`)
-                    changeElementColor(mySpan, "green");
-                }
-                else {
-                    // console.log(`ooh not good`)
-                    changeElementColor(mySpan, "red");
-                    subLivee();
-                }
-                timesRan = 0;
-            }
-            //check
-            deviation = lastMousePosition.mouseY - mousePosition.mouseY;
-            if (deviation < 0) {
-                deviation *= -1;
-            }
-            if (deviation > maxDeviation) {
-                maxDeviation = deviation;
-            }
-            // console.log(`deviation ${deviation} maxD: ${maxDeviation}`)
-            lastMousePosition.mouseY = mousePosition.mouseY;
-            setCircleScale(maxDeviation);
-            setCircleText(clientX, clientY);
-        }
-        function createCircles(amount = 2) {
-            console.log(`hi`);
+    makeAll();
+    //useAll properties made - variable declarations
+    const rootDiv = document.querySelector("#rootDiv");
+    function myGame(amount) {
+        rootDiv.innerHTML = "";
+        //brown squares
+        function makeSmallRecs(amount) {
             for (let i = 0; i < amount; i++) {
-                const circle = document.createElement("div");
-                circle.setAttribute("id", `circ${i + 1}`);
-                circle.setAttribute("class", "scaleCircle");
-                document.body.append(circle);
+                const smallRec = makeElement("div", "", "smallRec");
+                rootDiv.appendChild(smallRec);
             }
         }
-        createCircles();
-        //circle 1 is dynamic red
-        const circle1 = document.querySelector(`#circ1`);
-        const circle2 = document.querySelector(`#circ2`);
-        circle2.style.scale = `${deviationLimit}`;
-        function setCircleScale(scale = 1) {
-            if (scale >= deviationLimit) {
-                scale = deviationLimit;
+        makeSmallRecs(amount);
+        const smallRectangles = document.querySelectorAll(".smallRec");
+        //main code starts here
+        const allRecPositions = {};
+        const alldistCompareAll = {};
+        smallRectangles.forEach((eachRec, index) => {
+            const rndWidth = 5 - Math.floor((Math.random() * 1));
+            const maxWidth = 100 - rndWidth;
+            const maxHeight = 100 - rndWidth;
+            const rndX = Math.floor(Math.random() * maxWidth);
+            const rndY = Math.floor(Math.random() * maxHeight);
+            eachRec.style.top = `${rndY}%`;
+            eachRec.style.left = `${rndX}%`;
+            eachRec.style.width = `${rndWidth}%`;
+            allRecPositions[`box${index + 1}`] = [rndX + rndWidth / 2, rndY + rndWidth / 2, false];
+            eachRec.setAttribute("id", `box${index + 1}`);
+        });
+        let currentBox = "box1";
+        let smallestDistArrObj = ["", Infinity];
+        let runAmt = 0;
+        function assignNextSmallest() {
+            allRecPositions[currentBox][2] = true;
+            smallestDistArrObj = ["", Infinity];
+            let comparedDistance;
+            for (const key in allRecPositions) {
+                if (allRecPositions[key][2] === false) {
+                    comparedDistance = findDistance(allRecPositions[currentBox][0], allRecPositions[currentBox][1], allRecPositions[key][0], allRecPositions[key][1]);
+                    alldistCompareAll[key] = comparedDistance;
+                    if (comparedDistance <= smallestDistArrObj[1]) {
+                        smallestDistArrObj = [key, comparedDistance];
+                    }
+                }
             }
-            circle1.style.scale = `${scale}`;
-        }
-        function setCircleText(x, y) {
-            circle1.innerHTML = `<p class="circText">X: ${x} Y: ${y}</p>`;
-        }
-    }
-}
-AllForTrackingMouse();
-// function AllForWorkingDiv(){
-//     //outer function - closure
-//     let workDiv = document.querySelector(".workingDiv") as HTMLDivElement
-//     let currentlyRunning = false
-//     function displayMousePosition(){
-//         document.addEventListener("mousemove", updateWorkDiv)
-//         currentlyRunning = true
-//     }
-//     displayMousePosition()
-//     let workDivAmount = 0
-//     function updateWorkDiv(event: MouseEvent){
-//         const { clientX, clientY } = event;
-//         workDiv.innerHTML = `X: ${clientX} Y: ${clientY}</p> ${workDiv.innerHTML}`
-//         if (workDivAmount >= 100){
-//             workDiv.innerHTML = ""
-//             workDivAmount = -1
-//         }
-//         workDivAmount++
-//     }   
-// }
-// AllForWorkingDiv()
-function handleLongMouseClick(element, eventType = "mousedown", time = 100) {
-    let mainEls = document.querySelectorAll(`${element}`);
-    let timeOut;
-    mainEls.forEach((eachEl) => {
-        if (eventType === "mousedown") {
-            eachEl.addEventListener(element, () => { handleClick("start"); });
-            eachEl.addEventListener(`mouseup`, () => { handleClick("stop"); });
-        }
-        else if (eventType === "mouseenter") {
-            eachEl.addEventListener(element, () => { handleClick("start"); });
-            eachEl.addEventListener(`mouseleave`, () => { handleClick("stop"); });
-        }
-        function handleClick(option) {
-            if (option === "start") {
-                timeOut = setTimeout(() => {
-                    console.log(`hello there ${time} ms`);
-                    changeElementColor(eachEl, "blue");
-                    runVibration(eachEl, "add");
+            allRecPositions[smallestDistArrObj[0]][2] = true;
+            const div1Rect = {
+                left: allRecPositions[currentBox][0],
+                right: 100 - allRecPositions[currentBox][0],
+                top: allRecPositions[currentBox][1],
+                bottom: 100 - allRecPositions[currentBox][1]
+            };
+            const div2Rect = {
+                left: allRecPositions[smallestDistArrObj[0]][0],
+                right: 100 - allRecPositions[smallestDistArrObj[0]][0],
+                top: allRecPositions[smallestDistArrObj[0]][1],
+                bottom: 100 - allRecPositions[smallestDistArrObj[0]][1]
+            };
+            const midpoint = {
+                x: (div1Rect.left + div2Rect.left) / 2,
+                y: (div1Rect.top + div2Rect.top) / 2,
+            };
+            const angle = Math.atan2(div2Rect.top - div1Rect.top, div2Rect.left - div1Rect.left);
+            const segmentCount = 10;
+            const segmentLength = comparedDistance / segmentCount;
+            const segmentPoints = [];
+            for (let i = 0; i <= segmentCount; i++) {
+                const x = midpoint.x + Math.cos(angle) * (i * segmentLength);
+                const y = midpoint.y + Math.sin(angle) * (i * segmentLength);
+                // Check if the x coordinate lies outside the bounds of the parent divs
+                if (x < Math.min(div1Rect.left, div2Rect.left) || x > Math.max(div1Rect.right, div2Rect.right)) {
+                    continue;
+                }
+                // Check if the y coordinate lies outside the bounds of the parent divs
+                if (y < Math.min(div1Rect.top, div2Rect.top) || y > Math.max(div1Rect.bottom, div2Rect.bottom)) {
+                    continue;
+                }
+                segmentPoints.push({ x, y });
+            }
+            let initial = 0;
+            callABubble(10);
+            function callABubble(time) {
+                setTimeout(() => {
+                    if (initial < segmentPoints.length - 1) {
+                        createBubble(segmentPoints[initial].x, segmentPoints[initial].y);
+                        initial++;
+                        callABubble(time);
+                    }
+                    else {
+                        wdAnything(`#${currentBox}`, `<p>${currentBox}<p>`, "backgroundColor", "green");
+                        currentBox = smallestDistArrObj[0];
+                        wdAnything(`#${smallestDistArrObj[0]}`, "$$nochange$$", "backgroundColor", "red");
+                        if (runAmt < smallRectangles.length - 2) {
+                            assignNextSmallest();
+                        }
+                        else {
+                            myGame(smallRectangles.length + 1);
+                        }
+                        runAmt++;
+                    }
                 }, time);
             }
-            else if (option === "stop") {
-                if (timeOut) {
-                    clearTimeout(timeOut);
-                    changeElementColor(eachEl, "black");
-                    runVibration(eachEl, "rem");
-                }
+        }
+        assignNextSmallest();
+        // let runAmt = 0
+        // const myInterval = setInterval(()=>{
+        //     if (runAmt < smallRectangles.length - 1){
+        //         assignNextSmallest()
+        //     }else{
+        //         clearInterval(myInterval)
+        //         myGame(smallRectangles.length+1)
+        //     }
+        //     runAmt++
+        // }, 1000)
+    }
+    myGame(5);
+    function findDistance(x1, y1, x2, y2) {
+        const xDiff = x2 - x1;
+        const yDiff = y2 - y1;
+        const distance = Math.sqrt(xDiff ** 2 + yDiff ** 2);
+        return distance;
+    }
+    function createBubble(coordX, coordY) {
+        const bubble = document.createElement("div");
+        bubble.setAttribute("class", "bubble");
+        bubble.style.top = `${coordY}%`;
+        bubble.style.left = `${coordX}%`;
+        // bubble.style.backgroundColor = `rgb(${255 - activeId * 20},${activeId*10},${activeId*30})`
+        rootDiv.appendChild(bubble);
+        setTimeout(() => {
+            bubble.style.animation = `rumbleBubble 2500ms`;
+            setTimeout(() => {
+                bubble.remove();
+            }, 2500);
+        }, 4000);
+    }
+    function wdAnything(elements, textValue, styleProp, stylePropValue) {
+        //write any change to the DOM
+        if (typeof elements === "string") {
+            const getAllEl = document.querySelectorAll(`${elements}`);
+            if (!getAllEl) {
+                console.log(`couldn't find element`);
+                return;
+            }
+            else {
+                elements = getAllEl;
             }
         }
-    });
-}
-handleLongMouseClick(".mainH1", "mouseenter");
-function changeElementColor(element, color) {
-    element.style.color = `${color}`;
-}
-function runVibration(element, option) {
-    if (option === "add") {
-        element.style.animation = `shake 400ms infinite alternate`;
+        if (elements instanceof NodeList) {
+            elements.forEach(addChange);
+        }
+        else if (elements instanceof HTMLElement) {
+            addChange(elements);
+        }
+        function addChange(element) {
+            if (styleProp && stylePropValue) {
+                element.style[styleProp] = stylePropValue;
+            }
+            if (textValue !== "$$nochange$$") {
+                element.innerHTML = textValue;
+            }
+        }
     }
-    else if (option === "rem") {
-        element.style.removeProperty("animation");
-    }
 }
+startAll();
